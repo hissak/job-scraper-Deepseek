@@ -1,70 +1,71 @@
 name: Test Supabase Storage Connection
 
 on:
-  workflow_dispatch:  # Manual trigger only (you click "Run workflow")
+  workflow_dispatch:
 
 jobs:
   test-storage:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
-        run: |
-          pip install supabase python-dotenv
+      - name: Install requests
+        run: pip install requests
 
-      - name: Create test_storage.py
-        run: |
-          cat > test_storage.py << 'EOF'
-          import os
-          from supabase import create_client
-
-          # Get credentials from GitHub Actions environment variables
-          SUPABASE_URL = os.getenv("SUPABASE_URL")
-          SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-          BUCKET_NAME = os.getenv("SUPABASE_RESUME_STORAGE_BUCKET", "resumes")
-          FILE_NAME = "resume.pdf"
-
-          print(f"Connecting to Supabase at {SUPABASE_URL}")
-          print(f"Using bucket: {BUCKET_NAME}")
-          print(f"Looking for file: {FILE_NAME}")
-
-          # Initialize Supabase client
-          supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-
-          try:
-              # Attempt to download the file
-              data = supabase.storage.from_(BUCKET_NAME).download(FILE_NAME)
-              print(f"✅ SUCCESS! Downloaded {len(data)} bytes from {BUCKET_NAME}/{FILE_NAME}")
-          except Exception as e:
-              print(f"❌ ERROR: {type(e).__name__}: {e}")
-              
-              # Try to extract more details (for Supabase storage errors)
-              if hasattr(e, 'response'):
-                  print(f"HTTP Status: {e.response.status_code}")
-                  try:
-                      print(f"Response body: {e.response.text}")
-                  except:
-                      pass
-              
-              # If it's a dict-like error
-              if hasattr(e, '__dict__'):
-                  print(f"Error details: {e.__dict__}")
-              
-              # Fail the job so we can see the error clearly
-              exit(1)
-          EOF
-
-      - name: Run Supabase storage test
+      - name: Test Supabase Storage directly with HTTP
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          SUPABASE_RESUME_STORAGE_BUCKET: resumes   # Change if your bucket name is different
-        run: python test_storage.py
+          BUCKET_NAME: resumes
+          FILE_NAME: resume.pdf
+        run: |
+          python << 'EOF'
+          import os, requests, json
+
+          url = os.getenv("SUPABASE_URL")
+          key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+          bucket = os.getenv("BUCKET_NAME")
+          filename = os.getenv("FILE_NAME")
+
+          # Construct the Supabase Storage download URL
+          download_url = f"{url}/storage/v1/object/{bucket}/{filename}"
+          headers = {
+              "Authorization": f"Bearer {key}",
+              "apikey": key
+          }
+
+          print(f"🔍 Testing download from: {download_url}")
+          response = requests.get(download_url, headers=headers)
+
+          print(f"HTTP Status: {response.status_code}")
+          
+          if response.status_code == 200:
+              print(f"✅ SUCCESS! Downloaded {len(response.content)} bytes")
+          else:
+              print(f"❌ FAILED with status {response.status_code}")
+              try:
+                  error_detail = response.json()
+                  print(f"Error details: {json.dumps(error_detail, indent=2)}")
+              except:
+                  print(f"Raw response: {response.text[:500]}")
+              
+              # Provide helpful hints based on status code
+              if response.status_code == 403:
+                  print("\n💡 HINT: Permission denied. Add an RLS policy to allow SELECT on storage.objects for bucket 'resumes'.")
+                  print("Run this SQL in Supabase SQL Editor:\n")
+                  print("CREATE POLICY \"Allow service role to download from resumes\"")
+                  print("ON storage.objects FOR SELECT USING (bucket_id = 'resumes');")
+              elif response.status_code == 404:
+                  print("\n💡 HINT: Bucket or file not found.")
+                  print(f" - Bucket name: '{bucket}'")
+                  print(f" - File name: '{filename}'")
+                  print("Make sure both exist in Supabase Storage.")
+              elif response.status_code == 401:
+                  print("\n💡 HINT: Unauthorized. Check your SUPABASE_SERVICE_ROLE_KEY.")
+              
+              exit(1)
+          EOF

@@ -101,13 +101,13 @@ def main():
 
     try:
     # Clean the response: remove Markdown code fences if present
-    cleaned_response = parsed_resume_details_str.strip()
-    if cleaned_response.startswith("```json"):
-        cleaned_response = cleaned_response[7:]  # remove leading ```json
-    elif cleaned_response.startswith("```"):
-        cleaned_response = cleaned_response[3:]  # remove leading ```
-    if cleaned_response.endswith("```"):
-        cleaned_response = cleaned_response[:-3]  # remove trailing ```
+        cleaned_response = parsed_resume_details_str.strip()
+        if cleaned_response.startswith("```json"):
+            cleaned_response = cleaned_response[7:]  # remove leading ```json
+        elif cleaned_response.startswith("```"):
+            cleaned_response = cleaned_response[3:]  # remove leading ```
+        if cleaned_response.endswith("```"):
+            cleaned_response = cleaned_response[:-3]  # remove trailing ```
     
     # Now parse as JSON
     resume_data_dict = json.loads(cleaned_response.strip())

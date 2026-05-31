@@ -100,25 +100,34 @@ def main():
         return
 
     try:
-        # Convert the JSON string response to a dictionary
-        resume_data_dict = json.loads(parsed_resume_details_str)
-        
-        # Recursive function to replace empty values or None with "NA"
-        def replace_empty_with_na(data):
-            if isinstance(data, dict):
-                return {k: replace_empty_with_na(v) for k, v in data.items()}
-            elif isinstance(data, list):
-                return[replace_empty_with_na(i) for i in data]
-            elif data == "" or data is None:
-                return "NA"
-            return data
+    # Clean the response: remove Markdown code fences if present
+    cleaned_response = parsed_resume_details_str.strip()
+    if cleaned_response.startswith("```json"):
+        cleaned_response = cleaned_response[7:]  # remove leading ```json
+    elif cleaned_response.startswith("```"):
+        cleaned_response = cleaned_response[3:]  # remove leading ```
+    if cleaned_response.endswith("```"):
+        cleaned_response = cleaned_response[:-3]  # remove trailing ```
+    
+    # Now parse as JSON
+    resume_data_dict = json.loads(cleaned_response.strip())
+    
+    # Recursive function to replace empty values or None with "NA"
+    def replace_empty_with_na(data):
+        if isinstance(data, dict):
+            return {k: replace_empty_with_na(v) for k, v in data.items()}
+        elif isinstance(data, list):
+            return [replace_empty_with_na(i) for i in data]
+        elif data == "" or data is None:
+            return "NA"
+        return data
 
-        resume_data_dict = replace_empty_with_na(resume_data_dict)
+    resume_data_dict = replace_empty_with_na(resume_data_dict)
 
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON response from AI: {e}")
-        print(f"Raw response: {parsed_resume_details_str}")
-        return
+except json.JSONDecodeError as e:
+    print(f"Error decoding JSON response from AI: {e}")
+    print(f"Raw response (first 500 chars): {parsed_resume_details_str[:500]}")
+    return
 
     # 4. Save parsed data to Supabase base_resume table
     save_success = supabase_utils.save_base_resume(resume_data_dict)

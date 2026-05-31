@@ -30,15 +30,46 @@ LLM_API_KEY = os.environ.get("LLM_API_KEY") or os.environ.get("GEMINI_API_KEY") 
 LLM_MODEL = "deepseek/deepseek-chat"
 
 # --- Search Configuration ---
-LINKEDIN_SEARCH_QUERIES = ["maths lecturer", "statistics lecturer", "maths teacher", "Maths assistant professor", "Maths professor"]
-LINKEDIN_LOCATION = "Singapore"
-LINKEDIN_GEO_ID = 102454443      # Singapore: 102454443, Dubai: 100205264
+LINKEDIN_SEARCH_QUERIES = [
+    "marketing", 
+    "digital marketing", 
+    "marketing specialist",
+    "marketing coordinator", 
+    "entry level marketing", 
+    "junior marketing",
+    "marketing associate", 
+    "mid level marketing", 
+    "marketing manager",
+    "social media manager",        # Explicitly added
+    "social media specialist",     # Entry/mid-level alternative
+    "social media coordinator",    # Often entry-level
+    "content manager",             # Related to social media
+    "community manager"            # Often overlaps with social media
+]
+LINKEDIN_LOCATION = "Remote"
+LINKEDIN_GEO_ID = None      # Singapore: 102454443, Dubai: 100205264
 LINKEDIN_JOB_TYPE = "F" # F=Full-time, C=Contract, P=Part-time, T=Temporary, I=Internship
-LINKEDIN_JOB_POSTING_DATE = "r86400" # r86400=Past 24h, r604800=Past week
-LINKEDIN_F_WT = 1 # 1=Onsite, 2=Remote, 3=Hybrid
+LINKEDIN_JOB_POSTING_DATE = "r604800" # r86400=Past 24h, r604800=Past week
+LINKEDIN_F_WT = 2 # 1=Onsite, 2=Remote, 3=Hybrid
 
-CAREERS_FUTURE_SEARCH_QUERIES = ["IT Support", "Full Stack Web Developer", "Application Support", "Cybersecurity Analyst", "fresher developer"]
-CAREERS_FUTURE_SEARCH_CATEGORIES = ["Information Technology"]
+CAREERS_FUTURE_SEARCH_QUERIES = [
+    "marketing",
+    "digital marketing",
+    "social media manager",
+    "social media specialist",
+    "content manager",
+    "community manager",
+    "marketing coordinator",
+    "entry level marketing",
+    "junior marketing"
+]
+
+CAREERS_FUTURE_SEARCH_CATEGORIES = [
+    "Marketing / PR",           # Most relevant
+    "Media / Advertising",      # For social media roles
+    "Sales / Business Development",  # Some marketing roles fall here
+    "Design / Creative"         # Content creation overlap
+]
 CAREERS_FUTURE_SEARCH_EMPLOYMENT_TYPES = ["Full Time"]
 
 # --- Processing Limits ---

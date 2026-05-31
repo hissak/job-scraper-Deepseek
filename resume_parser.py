@@ -113,14 +113,14 @@ def main():
         resume_data_dict = json.loads(cleaned_response.strip())
     
     # Recursive function to replace empty values or None with "NA"
-    def replace_empty_with_na(data):
-        if isinstance(data, dict):
-            return {k: replace_empty_with_na(v) for k, v in data.items()}
-        elif isinstance(data, list):
-            return [replace_empty_with_na(i) for i in data]
-        elif data == "" or data is None:
+        def replace_empty_with_na(data):
+            if isinstance(data, dict):
+                return {k: replace_empty_with_na(v) for k, v in data.items()}
+            elif isinstance(data, list):
+                return [replace_empty_with_na(i) for i in data]
+            elif data == "" or data is None:
             return "NA"
-        return data
+            return data
 
         resume_data_dict = replace_empty_with_na(resume_data_dict)
 

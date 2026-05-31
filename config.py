@@ -74,10 +74,10 @@ CAREERS_FUTURE_SEARCH_EMPLOYMENT_TYPES = ["Full Time"]
 
 # --- Processing Limits ---
 SCRAPING_SOURCES = ["linkedin"] # "linkedin", "careers_future"
-JOBS_TO_SCORE_PER_RUN = 5
-JOBS_TO_CUSTOMIZE_PER_RUN = 1
+JOBS_TO_SCORE_PER_RUN = 30
+JOBS_TO_CUSTOMIZE_PER_RUN = 10
 MAX_JOBS_PER_SEARCH = {
-    "linkedin": 2,
+    "linkedin": 50,
     "careers_future": 10,
 }
 

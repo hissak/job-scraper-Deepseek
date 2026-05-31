@@ -561,45 +561,42 @@ def download_resume_from_storage(file_name: str = "resume.pdf") -> Optional[byte
         logging.error(f"Error downloading '{file_name}' from Supabase Storage: {e}")
         return None
 
-
 def save_base_resume(resume_data: dict) -> bool:
     """
     Saves (upserts) the parsed base resume JSON to the 'base_resume' table.
-    Deletes any existing rows first to ensure only one base resume exists.
-
-    Args:
-        resume_data: The parsed resume data as a dictionary.
-
-    Returns:
-        True if saved successfully, False otherwise.
+    Assumes the table has columns: id (UUID, primary key), resume_data (JSONB),
+    created_at, updated_at (optional).
     """
     if not resume_data:
         logging.error("No resume data provided to save.")
         return False
 
     table_name = config.SUPABASE_BASE_RESUME_TABLE_NAME
+
     try:
-        # Delete any existing base resume rows (there should only be one)
-        logging.info(f"Clearing existing base resume data from '{table_name}'...")
-        supabase.table(table_name).delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
-
-        # Insert the new base resume
-        logging.info(f"Saving parsed base resume to '{table_name}'...")
-        response = supabase.table(table_name).insert({
-            "resume_data": resume_data
-        }).execute()
-
-        if response.data and len(response.data) > 0:
+        # First, check if a row already exists (by trying to fetch one)
+        existing = supabase.table(table_name).select("id").limit(1).execute()
+        if existing.data:
+            # Update the existing row
+            row_id = existing.data[0]["id"]
+            response = supabase.table(table_name).update({"resume_data": resume_data}).eq("id", row_id).execute()
+            logging.info(f"Updated existing base resume record (id={row_id}).")
+        else:
+            # Insert new row
+            response = supabase.table(table_name).insert({"resume_data": resume_data}).execute()
+            logging.info("Inserted new base resume record.")
+        
+        # Check if operation succeeded
+        if response.data:
             logging.info(f"Successfully saved base resume to '{table_name}'.")
             return True
         else:
-            logging.warning(f"Base resume insert returned no data. Response: {response}")
+            logging.warning(f"Base resume save returned no data. Response: {response}")
             return False
 
     except Exception as e:
         logging.error(f"Error saving base resume to Supabase: {e}", exc_info=True)
         return False
-
 
 def get_base_resume() -> Optional[dict]:
     """

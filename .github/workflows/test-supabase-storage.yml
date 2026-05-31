@@ -1,0 +1,70 @@
+name: Test Supabase Storage Connection
+
+on:
+  workflow_dispatch:  # Manual trigger only (you click "Run workflow")
+
+jobs:
+  test-storage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install supabase python-dotenv
+
+      - name: Create test_storage.py
+        run: |
+          cat > test_storage.py << 'EOF'
+          import os
+          from supabase import create_client
+
+          # Get credentials from GitHub Actions environment variables
+          SUPABASE_URL = os.getenv("SUPABASE_URL")
+          SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+          BUCKET_NAME = os.getenv("SUPABASE_RESUME_STORAGE_BUCKET", "resumes")
+          FILE_NAME = "resume.pdf"
+
+          print(f"Connecting to Supabase at {SUPABASE_URL}")
+          print(f"Using bucket: {BUCKET_NAME}")
+          print(f"Looking for file: {FILE_NAME}")
+
+          # Initialize Supabase client
+          supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+
+          try:
+              # Attempt to download the file
+              data = supabase.storage.from_(BUCKET_NAME).download(FILE_NAME)
+              print(f"✅ SUCCESS! Downloaded {len(data)} bytes from {BUCKET_NAME}/{FILE_NAME}")
+          except Exception as e:
+              print(f"❌ ERROR: {type(e).__name__}: {e}")
+              
+              # Try to extract more details (for Supabase storage errors)
+              if hasattr(e, 'response'):
+                  print(f"HTTP Status: {e.response.status_code}")
+                  try:
+                      print(f"Response body: {e.response.text}")
+                  except:
+                      pass
+              
+              # If it's a dict-like error
+              if hasattr(e, '__dict__'):
+                  print(f"Error details: {e.__dict__}")
+              
+              # Fail the job so we can see the error clearly
+              exit(1)
+          EOF
+
+      - name: Run Supabase storage test
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_RESUME_STORAGE_BUCKET: resumes   # Change if your bucket name is different
+        run: python test_storage.py

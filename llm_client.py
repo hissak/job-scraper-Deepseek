@@ -188,7 +188,7 @@ class LLMClient:
             base_kwargs["api_key"] = self.api_key
 
         # Add structured output (Pydantic model)
-        if response_format is not None:
+        if response_format is not None and "deepseek" not in self.model.lower():
             base_kwargs["response_format"] = response_format
 
         last_exception = None

@@ -110,7 +110,7 @@ def main():
             cleaned_response = cleaned_response[:-3]  # remove trailing ```
     
     # Now parse as JSON
-    resume_data_dict = json.loads(cleaned_response.strip())
+        resume_data_dict = json.loads(cleaned_response.strip())
     
     # Recursive function to replace empty values or None with "NA"
     def replace_empty_with_na(data):
@@ -122,7 +122,7 @@ def main():
             return "NA"
         return data
 
-    resume_data_dict = replace_empty_with_na(resume_data_dict)
+        resume_data_dict = replace_empty_with_na(resume_data_dict)
 
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON response from AI: {e}")

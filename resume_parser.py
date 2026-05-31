@@ -119,8 +119,8 @@ def main():
             elif isinstance(data, list):
                 return [replace_empty_with_na(i) for i in data]
             elif data == "" or data is None:
-            return "NA"
-            return data
+                return "NA"
+                return data
 
         resume_data_dict = replace_empty_with_na(resume_data_dict)
 

@@ -220,13 +220,15 @@ class LLMClient:
 
                 logger.debug(f"LLM request attempt {attempt + 1}/{max_attempts} to {current_model}")
                 response = litellm.completion(**kwargs)
-                print(f"LiteLLM raw message: content={message.content!r}, parsed={getattr(message, 'parsed', None)}")
+                print(f"Calling LiteLLM with model={current_model}, kwargs keys={list(kwargs.keys())}")
+
 
                 # Track daily usage
                 self._daily_count += 1
 
                 # Extract text from response
                 message = response.choices[0].message
+                print(f"LiteLLM raw message: content={message.content!r}, parsed={getattr(message, 'parsed', None)}")
 
 # If structured output was requested, try .parsed first (LiteLLM sets this
 # when the provider returns a validated Pydantic object)

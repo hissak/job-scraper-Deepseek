@@ -160,7 +160,35 @@ def main():
     # Now parse as JSON
         print(f"Cleaned response: {cleaned_response[:1000]}")
         resume_data_dict = json.loads(cleaned_response.strip())
-    
+
+# Remap DeepSeek field names to match models.py schema
+field_remapping = {
+    "work_experience": "experience",
+    "linkedin": None,       # move into links
+    "portfolio": None,      # move into links
+    "github": None,         # move into links
+}
+
+# Remap top-level experience key
+if "work_experience" in resume_data_dict and "experience" not in resume_data_dict:
+    resume_data_dict["experience"] = resume_data_dict.pop("work_experience")
+
+# Remap links into nested Links object
+links = resume_data_dict.get("links", {})
+for link_field in ["linkedin", "github", "portfolio"]:
+    if link_field in resume_data_dict:
+        links[link_field] = resume_data_dict.pop(link_field)
+if links:
+    resume_data_dict["links"] = links
+
+# Remap education fields if needed
+for edu in resume_data_dict.get("education", []):
+    if "field" in edu and "field_of_study" not in edu:
+        edu["field_of_study"] = edu.pop("field")
+    if "start_date" in edu and "start_year" not in edu:
+        edu["start_year"] = edu.pop("start_date")
+    if "end_date" in edu and "end_year" not in edu:
+        edu["end_year"] = edu.pop("end_date")
     # Recursive function to replace empty values or None with "NA"
         def replace_empty_with_na(data):
             if isinstance(data, dict):

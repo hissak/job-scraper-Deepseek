@@ -143,7 +143,6 @@ class LLMClient:
                 f"Daily LLM request budget exceeded ({self.daily_budget} requests). "
                 f"Increase LLM_DAILY_REQUEST_BUDGET or wait for reset."
             )
-    print(f"generate_content called: model={model}, response_format={response_format}, deepseek={('deepseek' in self.model.lower())}")
     def generate_content(
         self,
         prompt: str,

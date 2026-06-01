@@ -128,6 +128,7 @@ def main():
         print(f"Error decoding JSON response from AI: {e}")
         print(f"Raw response (first 500 chars): {parsed_resume_details_str[:500]}")
         return
+    print(f"Parsed resume data: {json.dumps(resume_data_dict, indent=2)}")
     # 4. Save parsed data to Supabase base_resume table
     save_success = supabase_utils.save_base_resume(resume_data_dict)
     if save_success:

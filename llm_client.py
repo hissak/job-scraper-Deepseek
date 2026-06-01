@@ -143,7 +143,7 @@ class LLMClient:
                 f"Daily LLM request budget exceeded ({self.daily_budget} requests). "
                 f"Increase LLM_DAILY_REQUEST_BUDGET or wait for reset."
             )
-
+    print(f"generate_content called: model={model}, response_format={response_format}, deepseek={('deepseek' in self.model.lower())}")
     def generate_content(
         self,
         prompt: str,
@@ -221,6 +221,7 @@ class LLMClient:
 
                 logger.debug(f"LLM request attempt {attempt + 1}/{max_attempts} to {current_model}")
                 response = litellm.completion(**kwargs)
+                print(f"LiteLLM raw message: content={message.content!r}, parsed={getattr(message, 'parsed', None)}")
 
                 # Track daily usage
                 self._daily_count += 1

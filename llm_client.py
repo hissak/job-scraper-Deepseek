@@ -225,7 +225,21 @@ class LLMClient:
                 self._daily_count += 1
 
                 # Extract text from response
-                content = response.choices[0].message.content
+                message = response.choices[0].message
+
+# If structured output was requested, try .parsed first (LiteLLM sets this
+# when the provider returns a validated Pydantic object)
+                if response_format is not None:
+                    parsed = getattr(message, "parsed", None)
+                    if parsed is not None:
+                        import json
+        # Return as JSON string so resume_parser.py can json.loads() it
+                    if hasattr(parsed, "model_dump"):
+                        return json.dumps(parsed.model_dump())
+                    return json.dumps(parsed)
+
+# Fallback: plain text content
+                content = message.content
                 if content:
                     return content.strip()
                 else:

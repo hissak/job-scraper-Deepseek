@@ -233,11 +233,9 @@ class LLMClient:
                 if response_format is not None:
                     parsed = getattr(message, "parsed", None)
                     if parsed is not None:
-                        import json
-        # Return as JSON string so resume_parser.py can json.loads() it
-                    if hasattr(parsed, "model_dump"):
-                        return json.dumps(parsed.model_dump())
-                    return json.dumps(parsed)
+                        if hasattr(parsed, "model_dump"):
+                            return json.dumps(parsed.model_dump())
+                        return json.dumps(parsed)             # ← line 240: json is local but not yet assigned → crash
 
 # Fallback: plain text content
                 content = message.content

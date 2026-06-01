@@ -89,12 +89,14 @@ def main():
 
     # 2. Extract text from PDF
     resume_text = extract_text_from_pdf(pdf_file_path)
+    print(f"Extracted text (first 500 chars): {resume_text[:500]}")
     if not resume_text:
         print("Failed to extract text. Exiting.")
         return
 
     # 3. Parse resume text with AI
     parsed_resume_details_str = parse_resume_with_ai(resume_text)
+    print(f"Raw AI response: {parsed_resume_details_str[:1000]}")
     if not parsed_resume_details_str:
         print("Failed to parse resume. Exiting.")
         return
@@ -110,6 +112,7 @@ def main():
             cleaned_response = cleaned_response[:-3]  # remove trailing ```
     
     # Now parse as JSON
+        print(f"Cleaned response: {cleaned_response[:1000]}")
         resume_data_dict = json.loads(cleaned_response.strip())
     
     # Recursive function to replace empty values or None with "NA"

@@ -43,16 +43,62 @@ def parse_resume_with_ai(resume_text):
     """
     print("Processing resume with AI model...")
 
-    prompt = f"""Extract and return the structured resume information from the text below. 
-    Only use what is explicitly stated in the text and do not infer or invent any details.
-    
-    CRITICAL: If any information is missing or not available in the text, use "NA" for that field. 
-    This applies to all fields (e.g., summary, dates, location, links, etc.). 
-    Do NOT leave fields empty or use empty strings.
+    prompt = f"""Extract and return the structured resume information from the text below.
+Only use what is explicitly stated. If any field is missing, use "NA".
+Do NOT use empty strings. Return ONLY valid JSON with no markdown, no code fences.
 
-    Resume text:
-    {resume_text}
-    """
+Use EXACTLY this JSON structure with EXACTLY these field names:
+{{
+  "name": "",
+  "email": "",
+  "phone": "",
+  "location": "",
+  "summary": "",
+  "skills": [],
+  "education": [
+    {{
+      "degree": "",
+      "field_of_study": "",
+      "institution": "",
+      "start_year": "",
+      "end_year": ""
+    }}
+  ],
+  "experience": [
+    {{
+      "job_title": "",
+      "company": "",
+      "location": "",
+      "start_date": "",
+      "end_date": "",
+      "description": ""
+    }}
+  ],
+  "projects": [
+    {{
+      "name": "",
+      "description": "",
+      "technologies": []
+    }}
+  ],
+  "certifications": [
+    {{
+      "name": "",
+      "issuer": "",
+      "year": ""
+    }}
+  ],
+  "languages": [],
+  "links": {{
+    "linkedin": "",
+    "github": "",
+    "portfolio": ""
+  }}
+}}
+
+Resume text:
+{resume_text}
+"""
 
     response_text = primary_client.generate_content(
         prompt=prompt,
